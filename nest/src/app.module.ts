@@ -10,6 +10,8 @@ import { Collection } from './collections/collection.entity';
 import { CollectionsModule } from './collections/collection.module';
 import { Link } from './links/link.entity';
 import { LinksModule } from './links/links.module';
+import { TagsModule } from './tags/tags.module';
+import { Tag } from './tags/tags.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { LinksModule } from './links/links.module';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        entities: [User, Collection, Link],
+        entities: [User, Collection, Link, Tag],
         synchronize: true,
       }),
     }),
@@ -32,6 +34,7 @@ import { LinksModule } from './links/links.module';
     AuthModule,
     CollectionsModule,
     LinksModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

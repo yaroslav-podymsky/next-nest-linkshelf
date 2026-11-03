@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CollectionsService } from '../collections/collection.service';
+import { TagsService } from '../tags/tags.service';
 import { Link } from './link.entity';
 import type { LinkStatus } from './link-status';
 
@@ -11,24 +12,45 @@ export class LinksService {
     @InjectRepository(Link)
     private readonly linksRepo: Repository<Link>,
     private readonly collectionsService: CollectionsService,
+    private readonly tagsService: TagsService,
   ) {}
 
-  findAll(
+  async findAll(
     userId: string,
-    filters: { collectionId?: string; status?: LinkStatus },
+    filters: {
+      collectionId?: string;
+      status?: LinkStatus;
+      tagId?: string;
+    },
   ): Promise<Link[]> {
-    return this.linksRepo.find({
-      where: {
-        userId,
-        ...(filters.collectionId ? { collectionId: filters.collectionId } : {}),
-        ...(filters.status ? { status: filters.status } : {}),
-      },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.linksRepo
+      .createQueryBuilder('link')
+      .leftJoinAndSelect('link.tags', 'tag')
+      .where('link.userId = :userId', { userId })
+      .orderBy('link.createdAt', 'DESC');
+
+    if (filters.collectionId) {
+      qb.andWhere('link.collectionId = :collectionId', {
+        collectionId: filters.collectionId,
+      });
+    }
+
+    if (filters.status) {
+      qb.andWhere('link.status = :status', { status: filters.status });
+    }
+
+    if (filters.tagId) {
+      qb.andWhere('tag.id = :tagId', { tagId: filters.tagId });
+    }
+
+    return qb.getMany();
   }
 
   async findOneForUser(userId: string, id: string): Promise<Link> {
-    const link = await this.linksRepo.findOne({ where: { id, userId } });
+    const link = await this.linksRepo.findOne({
+      where: { id, userId },
+      relations: { tags: true },
+    });
     if (!link) {
       throw new NotFoundException('Link not found');
     }
@@ -52,6 +74,7 @@ export class LinksService {
       url: data.url,
       collectionId: data.collectionId,
       status: data.status ?? 'todo',
+      tags: [],
     });
 
     return this.linksRepo.save(link);
@@ -76,5 +99,32 @@ export class LinksService {
     if (!result.affected) {
       throw new NotFoundException('Link not found');
     }
+  }
+
+  async addTag(userId: string, linkId: string, tagId: string): Promise<Link> {
+    const link = await this.findOneForUser(userId, linkId);
+    const tag = await this.tagsService.findOneByIdForUser(userId, tagId);
+
+    const alreadyLinked = link.tags.some((item) => item.id === tag.id);
+    if (!alreadyLinked) {
+      link.tags.push(tag);
+      await this.linksRepo.save(link);
+    }
+
+    return this.findOneForUser(userId, linkId);
+  }
+
+  async removeTag(
+    userId: string,
+    linkId: string,
+    tagId: string,
+  ): Promise<Link> {
+    const link = await this.findOneForUser(userId, linkId);
+    await this.tagsService.findOneByIdForUser(userId, tagId);
+
+    link.tags = link.tags.filter((item) => item.id !== tagId);
+    await this.linksRepo.save(link);
+
+    return this.findOneForUser(userId, linkId);
   }
 }

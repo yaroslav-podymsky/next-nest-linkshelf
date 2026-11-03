@@ -1,11 +1,11 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   Param,
   Patch,
   Post,
+  Body,
   Query,
   Req,
   UseGuards,
@@ -27,6 +27,10 @@ class LinksQueryDto {
   @IsOptional()
   @IsIn(LINK_STATUSES)
   status?: LinkStatus;
+
+  @IsOptional()
+  @IsString()
+  tagId?: string;
 }
 
 @Controller('links')
@@ -39,6 +43,7 @@ export class LinksController {
     return this.linksService.findAll(req.user.userId, {
       collectionId: query.collectionId,
       status: query.status,
+      tagId: query.tagId,
     });
   }
 
@@ -64,5 +69,23 @@ export class LinksController {
   @Delete(':id')
   remove(@Req() req: AuthRequest, @Param('id') id: string) {
     return this.linksService.remove(req.user.userId, id);
+  }
+
+  @Post(':id/tags/:tagId')
+  addTag(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @Param('tagId') tagId: string,
+  ) {
+    return this.linksService.addTag(req.user.userId, id, tagId);
+  }
+
+  @Delete(':id/tags/:tagId')
+  removeTag(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @Param('tagId') tagId: string,
+  ) {
+    return this.linksService.removeTag(req.user.userId, id, tagId);
   }
 }

@@ -14,6 +14,9 @@ async function bootstrap() {
   );
   const config = app.get(ConfigService);
   const port = config.get<number>('PORT') ?? 3004;
+  app.enableCors({
+    origin: true, //  разрешить любой origin
+  });
   await app.listen(port);
 }
 bootstrap();
