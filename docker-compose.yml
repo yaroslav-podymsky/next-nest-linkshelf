@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: linkshelf-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: linkshelf
+      POSTGRES_PASSWORD: linkshelf
+      POSTGRES_DB: linkshelf
+    volumes:
+      - linkshelf_pg_data:/var/lib/postgresql/data
+
+volumes:
+  linkshelf_pg_data:
