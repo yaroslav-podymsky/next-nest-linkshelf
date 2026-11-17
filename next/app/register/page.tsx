@@ -26,23 +26,25 @@ export default function RegisterPage() {
       });
       router.push('/login');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Register failed');
+      setError(
+        err instanceof Error ? err.message : 'Не удалось создать аккаунт',
+      );
     }
   };
 
   return (
     <PageShell
-      title="Create account"
-      subtitle="Email and password, min 6 characters."
+      title="Регистрация"
+      subtitle="Email и пароль, минимум 6 символов."
     >
       <AuthForm
-        submitLabel="Create account"
+        submitLabel="Создать аккаунт"
         error={error}
         passwordMinLength={6}
         onSubmit={handleSubmit}
       />
       <p className="form-footer">
-        Already registered? <Link href="/login">Log in</Link>
+        Уже есть аккаунт? <Link href="/login">Войти</Link>
       </p>
     </PageShell>
   );

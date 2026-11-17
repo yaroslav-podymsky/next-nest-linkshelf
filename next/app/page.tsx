@@ -5,18 +5,18 @@ export default function Home() {
   return (
     <PageShell
       title="LinkShelf"
-      subtitle="Save learning links in collections with tags."
+      subtitle="Сохраняй учебные ссылки в коллекциях с тегами."
     >
       <div className="stack">
-        <ButtonLink href="/login">Log in</ButtonLink>
+        <ButtonLink href="/login">Войти</ButtonLink>
         <ButtonLink href="/register" variant="secondary">
-          Create account
+          Создать аккаунт
         </ButtonLink>
         <ButtonLink href="/me" variant="secondary">
-          My profile
+          Мой профиль
         </ButtonLink>
         <ButtonLink href="/collections" variant="secondary">
-          Collections
+          Коллекции
         </ButtonLink>
       </div>
     </PageShell>

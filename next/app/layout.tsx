@@ -15,12 +15,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'LinkShelf',
-  description: 'Personal shelf of learning links',
+  description: 'Личная полка учебных ссылок',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="ru" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="app-root">{children}</body>
     </html>
   );

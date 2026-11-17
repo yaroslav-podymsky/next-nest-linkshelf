@@ -25,7 +25,9 @@ export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
       setTitle('');
       await onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create collection');
+      setError(
+        err instanceof Error ? err.message : 'Не удалось создать коллекцию',
+      );
     } finally {
       setPending(false);
     }
@@ -34,11 +36,10 @@ export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
   return (
     <form onSubmit={handleSubmit} className="stack stack--form">
       <label className="field">
-        Title
+        Название
         <input
           className="field-input"
           type="text"
-          placeholder="e.g. Nest"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           required
@@ -50,7 +51,7 @@ export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
         type="submit"
         disabled={pending || !title.trim()}
       >
-        {pending ? 'Please wait...' : 'Add collection'}
+        {pending ? 'Подождите...' : 'Добавить коллекцию'}
       </button>
 
       {error ? <p className="form-error">{error}</p> : null}

@@ -44,7 +44,7 @@ export default function AuthForm({
       </label>
 
       <label className="field">
-        Password
+        Пароль
         <input
           className="field-input"
           type="password"
@@ -56,7 +56,7 @@ export default function AuthForm({
       </label>
 
       <button className="btn btn--primary" type="submit" disabled={pending}>
-        {pending ? 'Please wait...' : submitLabel}
+        {pending ? 'Подождите...' : submitLabel}
       </button>
 
       {error ? <p className="form-error">{error}</p> : null}

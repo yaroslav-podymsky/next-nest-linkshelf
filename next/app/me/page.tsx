@@ -19,47 +19,37 @@ export default function MePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let ignore = false;
-
-    async function loadProfile() {
+    const loadProfile = async () => {
       try {
         const me = await apiFetch<MeResponse>('/auth/me');
-        if (ignore) return;
         setData(me);
       } catch (err) {
-        if (ignore) return;
-        const message =
-          err instanceof Error ? err.message : 'Failed to load profile';
-        setError(message);
+        setError(
+          err instanceof Error ? err.message : 'Не удалось загрузить профиль',
+        );
         router.push('/login');
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
-    }
-
-    void loadProfile();
-
-    return () => {
-      ignore = true;
     };
+
+    loadProfile();
   }, [router]);
 
   if (loading) {
     return (
-      <PageShell title="My profile" subtitle="Loading...">
-        <p className="text-muted">Please wait</p>
+      <PageShell title="Мой профиль" subtitle="Загрузка...">
+        <p className="text-muted">Подождите</p>
       </PageShell>
     );
   }
 
   return (
-    <PageShell title="My profile" subtitle="Data from Nest GET /auth/me">
+    <PageShell title="Мой профиль" subtitle="Данные с Nest: GET /auth/me">
       {data ? (
         <div className="profile-card">
           <div className="profile-row">
-            <p className="profile-label">User ID</p>
+            <p className="profile-label">ID пользователя</p>
             <p className="profile-value">{data.userId}</p>
           </div>
           <div className="profile-row">
@@ -72,12 +62,12 @@ export default function MePage() {
       {error ? <p className="form-error">{error}</p> : null}
 
       <div className="stack">
-        <ButtonLink href="/">Home</ButtonLink>
+        <ButtonLink href="/">На главную</ButtonLink>
         <ButtonLink href="/collections" variant="secondary">
-          Collections
+          Коллекции
         </ButtonLink>
         <p className="text-center">
-          <Link href="/login">Switch account</Link>
+          <Link href="/login">Сменить аккаунт</Link>
         </p>
       </div>
     </PageShell>

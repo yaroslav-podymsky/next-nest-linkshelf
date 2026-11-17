@@ -31,15 +31,15 @@ export default function LoginPage() {
       localStorage.setItem('nextAccessToken', data.accessToken);
       router.push('/me');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Не удалось войти');
     }
   };
 
   return (
-    <PageShell title="Log in" subtitle="Use your LinkShelf account.">
-      <AuthForm submitLabel="Log in" error={error} onSubmit={handleSubmit} />
+    <PageShell title="Вход" subtitle="Войдите в аккаунт LinkShelf.">
+      <AuthForm submitLabel="Войти" error={error} onSubmit={handleSubmit} />
       <p className="form-footer">
-        No account yet? <Link href="/register">Create account</Link>
+        Нет аккаунта? <Link href="/register">Создать аккаунт</Link>
       </p>
     </PageShell>
   );
