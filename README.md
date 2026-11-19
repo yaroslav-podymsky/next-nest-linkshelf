@@ -4,45 +4,98 @@
 
 Стек: **Next.js** (App Router, FSD) + **Nest.js** (REST) + **PostgreSQL**.
 
-Верстка намеренно простая — цель не UI, а связка фронт ↔ бэк ↔ БД, авторизация и практики Next/Nest.
+Верстка простая — цель не UI, а связка фронт ↔ бэк ↔ БД, JWT и практики Next/Nest.
 
-## Что умеет (цель)
+## Что умеет
 
-После регистрации/логина пользователь:
+После регистрации и входа пользователь:
 
-- создаёт **коллекции** (например «Nest», «Next», «SQL»);
+- создаёт **коллекции**;
 - добавляет в них **ссылки** (url, title, статус `todo` | `reading` | `done`);
-- вешает **теги**;
-- смотрит списки, фильтры и карточку ссылки.
+- вешает **теги** и фильтрует список по статусу и тегу.
 
-## Структура репозитория
+## Структура
 
 ```
 full_stack/
-  next/     # фронтенд (Next.js)
-  nest/     # бэкенд (Nest.js)
-  .cursor/  # менторский skill и правила обучения
+  docker-compose.yml   # PostgreSQL
+  nest/                # API (порт 3004)
+  next/                # UI  (порт 3000)
 ```
 
-Два приложения в одном репо, у каждого свой `package.json`. Без Turborepo на старте.
+Два приложения, у каждого свой `package.json`.
+
+## Порты
+
+| Сервис | URL | Зачем |
+|---|---|---|
+| Next | http://localhost:3000 | страницы в браузере |
+| Nest | http://localhost:3004 | REST API |
+| Postgres | localhost:5432 | БД |
+
+CORS на Nest должен разрешать **origin фронта**: `http://localhost:3000` (`CORS_ORIGIN` в `nest/.env`).  
+`NEXT_PUBLIC_API_URL` — адрес **API** (`http://localhost:3004`), не порт Next.
+
+## Как поднять
+
+Порядок: база → Nest → Next.
+
+### 1. PostgreSQL
+
+Из корня репозитория:
+
+```bash
+docker compose up -d
+```
+
+Локальный Postgres тоже можно: те же `DB_HOST` / `DB_PORT` / `DB_USERNAME` / `DB_PASSWORD` / `DB_NAME`, что в `nest/.env.example`.
+
+### 2. Nest
+
+```bash
+cd nest
+cp .env.example .env
+```
+
+В `.env` задай `JWT_SECRET` и проверь `CORS_ORIGIN=http://localhost:3000`.
+
+```bash
+npm i
+npm run start:dev
+```
+
+API: http://localhost:3004
+
+### 3. Next
+
+```bash
+cd next
+cp .env.example .env.local
+```
+
+В `.env.local` должно быть:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:3004
+```
+
+```bash
+npm i
+npm run dev
+```
+
+UI: http://localhost:3000
+
+## Сценарий проверки
+
+1. Регистрация → вход.
+2. Создать коллекцию, открыть её.
+3. Добавить ссылку, тег, отфильтровать по статусу/тегу.
+4. «Выйти» — токен пропадает, `/me` и коллекции снова требуют логин.
 
 ## Auth и API (кратко)
 
 - `POST /auth/register` — регистрация
 - `POST /auth/login` — JWT access token
 - `GET /auth/me` — текущий пользователь
-- CRUD для collections / links / tags (только свои данные)
-
-## Как поднимать
-
-Появятся по ходу обучения:
-
-1. PostgreSQL
-2. Nest (`nest/`)
-3. Next (`next/`)
-
-Пока папки `next/` и `nest/` пустые — инициализация идёт по шагам ментора.
-
-## Режим обучения
-
-Код пишет ученик. Агент только выдаёт задания (см. `.cursor/skills/fullstack-mentor/`).
+- CRUD collections / links / tags (только свои данные)

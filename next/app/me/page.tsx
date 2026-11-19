@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/shared/api/client';
-import { ButtonLink } from '@/shared/ui/button-link';
-import { PageShell } from '@/shared/ui/page-shell';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "@/shared/api/client";
+import { ButtonLink } from "@/shared/ui/button-link";
+import { PageShell } from "@/shared/ui/page-shell";
+import LogoutButton from "@/features/auth/ui/logout/ui";
 
 type MeResponse = {
   userId: string;
@@ -21,13 +22,13 @@ export default function MePage() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const me = await apiFetch<MeResponse>('/auth/me');
+        const me = await apiFetch<MeResponse>("/auth/me");
         setData(me);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Не удалось загрузить профиль',
+          err instanceof Error ? err.message : "Не удалось загрузить профиль"
         );
-        router.push('/login');
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -69,6 +70,7 @@ export default function MePage() {
         <p className="text-center">
           <Link href="/login">Сменить аккаунт</Link>
         </p>
+        <LogoutButton />
       </div>
     </PageShell>
   );
