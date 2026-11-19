@@ -11,7 +11,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { CreateLinkDto } from './dto/create-link.dto';
 import { UpdateLinkDto } from './dto/update-link.dto';
 import { LINK_STATUSES, type LinkStatus } from './link-status';
@@ -31,6 +39,19 @@ class LinksQueryDto {
   @IsOptional()
   @IsString()
   tagId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number;
 }
 
 @Controller('links')
@@ -44,6 +65,8 @@ export class LinksController {
       collectionId: query.collectionId,
       status: query.status,
       tagId: query.tagId,
+      page: query.page,
+      limit: query.limit,
     });
   }
 

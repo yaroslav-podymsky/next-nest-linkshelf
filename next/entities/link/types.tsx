@@ -10,3 +10,10 @@ export type CollectionLink = {
   status: LinkStatus;
   tags?: Tag[];
 };
+
+export type LinksListResponse = {
+  items: CollectionLink[];
+  total: number;
+  page: number;
+  limit: number;
+};

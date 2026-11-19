@@ -6,6 +6,13 @@ import { TagsService } from '../tags/tags.service';
 import { Link } from './link.entity';
 import type { LinkStatus } from './link-status';
 
+type LinksResponse = {
+  items: Link[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 @Injectable()
 export class LinksService {
   constructor(
@@ -21,8 +28,14 @@ export class LinksService {
       collectionId?: string;
       status?: LinkStatus;
       tagId?: string;
+      page?: number;
+      limit?: number;
     },
-  ): Promise<Link[]> {
+  ): Promise<LinksResponse> {
+    const limit = Math.min(Math.max(Number(filters.limit) || 10, 1), 50);
+    const page = Math.max(Number(filters.page) || 1, 1);
+    const skip = (page - 1) * limit;
+
     const qb = this.linksRepo
       .createQueryBuilder('link')
       .leftJoinAndSelect('link.tags', 'tag')
@@ -43,7 +56,14 @@ export class LinksService {
       qb.andWhere('tag.id = :tagId', { tagId: filters.tagId });
     }
 
-    return qb.getMany();
+    const [items, total] = await qb.skip(skip).take(limit).getManyAndCount();
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+    };
   }
 
   async findOneForUser(userId: string, id: string): Promise<Link> {

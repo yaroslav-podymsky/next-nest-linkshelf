@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
@@ -11,6 +11,7 @@ import type { Tag } from "@/entities/tag/types";
 import { useLinkFilters } from "@/features/link-filters/model/use-link-filters";
 import StatusFilters from "@/features/link-filters/ui/status-filters";
 import TagFilters from "@/features/link-filters/ui/tag-filters";
+import PaginationFilters from "@/features/link-filters/ui/pagination-filters";
 import LinkCreateForm from "@/features/link-create/ui";
 import TagCreateForm from "@/features/tag-create/ui";
 import { ButtonLink } from "@/shared/ui/button-link";
@@ -24,9 +25,11 @@ const CollectionStats = dynamic(() => import("@/widgets/collection-stats/ui"), {
 export default function CollectionDetailsPage() {
   const params = useParams<{ id: string }>();
   const collectionId = params.id;
-  const { selectedStatus, selectedTagId } = useLinkFilters();
+  const { selectedStatus, selectedTagId, selectedLimit, selectedPage } =
+    useLinkFilters();
 
   const [links, setLinks] = useState<CollectionLink[]>([]);
+  const [total, setTotal] = useState(0);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,29 +48,35 @@ export default function CollectionDetailsPage() {
     }
   };
 
-  const loadLinks = async (mode: "initial" | "refresh" = "refresh") => {
-    if (!collectionId) return;
+  const loadLinks = useCallback(
+    async (mode: "initial" | "refresh" = "refresh") => {
+      if (!collectionId) return;
 
-    if (mode === "initial") setLoading(true);
-    else setRefreshing(true);
+      if (mode === "initial") setLoading(true);
+      else setRefreshing(true);
 
-    try {
-      const data = await fetchCollectionLinks({
-        collectionId,
-        status: selectedStatus,
-        tagId: selectedTagId,
-      });
-      setLinks(data ?? []);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Не удалось загрузить ссылки"
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+      try {
+        const data = await fetchCollectionLinks({
+          collectionId,
+          status: selectedStatus,
+          tagId: selectedTagId,
+          limit: selectedLimit,
+          page: selectedPage,
+        });
+        setLinks(data.items ?? []);
+        setTotal(data.total ?? 0);
+        setError(null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Не удалось загрузить ссылки"
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [collectionId, selectedLimit, selectedPage, selectedStatus, selectedTagId]
+  );
 
   const toggleLinkTag = async (
     linkId: string,
@@ -97,8 +106,14 @@ export default function CollectionDetailsPage() {
     }
 
     void loadLinks("refresh");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- collection or URL filters
-  }, [collectionId, selectedStatus, selectedTagId]);
+  }, [
+    collectionId,
+    selectedStatus,
+    selectedTagId,
+    selectedPage,
+    selectedLimit,
+    loadLinks,
+  ]);
 
   const emptyMessage = (() => {
     if (selectedStatus && selectedTagId) {
@@ -114,7 +129,7 @@ export default function CollectionDetailsPage() {
       <p className="collection-id-badge">ID: {collectionId}</p>
 
       <CollectionStats
-        allCount={links.length}
+        allCount={total}
         doneCount={links.filter((el) => el.status === "done").length}
         readingCount={links.filter((el) => el.status === "reading").length}
         todoCount={links.filter((el) => el.status === "todo").length}
@@ -134,6 +149,8 @@ export default function CollectionDetailsPage() {
       {!loading && !error && links.length === 0 ? (
         <p className="collections-empty">{emptyMessage}</p>
       ) : null}
+
+      {!loading && total > 0 ? <PaginationFilters total={total} /> : null}
 
       {!loading && links.length > 0 ? (
         <LinksList links={links} tags={tags} onToggleTag={toggleLinkTag} />

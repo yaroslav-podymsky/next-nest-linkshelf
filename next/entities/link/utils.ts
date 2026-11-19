@@ -8,3 +8,5 @@ export const STATUS_LABELS: Record<LinkStatus, string> = {
   reading: "Читаю",
   done: "Готово",
 };
+
+export const limitStep = 3;
