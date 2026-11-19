@@ -1,22 +1,24 @@
+import { parseApiError } from "./parse-api-error";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
-  throw new Error('NEXT_PUBLIC_API_URL is not set');
+  throw new Error("NEXT_PUBLIC_API_URL is not set");
 }
 
 export async function apiFetch<T>(
   path: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<T> {
   const headers = new Headers(options.headers);
 
-  if (!headers.has('Content-Type') && options.body) {
-    headers.set('Content-Type', 'application/json');
+  if (!headers.has("Content-Type") && options.body) {
+    headers.set("Content-Type", "application/json");
   }
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('nextAccessToken');
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("nextAccessToken");
     if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+      headers.set("Authorization", `Bearer ${token}`);
     }
   }
   const response = await fetch(`${API_URL}${path}`, {
@@ -25,10 +27,10 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('nextAccessToken');
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
+    if (response.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("nextAccessToken");
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
       }
     }
     const text = await response.text();
@@ -40,33 +42,4 @@ export async function apiFetch<T>(
   }
 
   return response.json() as Promise<T>;
-}
-
-function parseApiError(text: string, status: number): string {
-  if (!text) {
-    return `Request failed with status ${status}`;
-  }
-
-  try {
-    const data = JSON.parse(text) as {
-      message?: string | string[];
-      error?: string;
-    };
-
-    if (Array.isArray(data.message)) {
-      return data.message.join(', ');
-    }
-
-    if (typeof data.message === 'string' && data.message.length > 0) {
-      return data.message;
-    }
-
-    if (typeof data.error === 'string' && data.error.length > 0) {
-      return data.error;
-    }
-  } catch {
-    // not JSON — fall through
-  }
-
-  return text;
 }

@@ -1,15 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import AuthForm from '@/features/auth/ui';
-import { apiFetch } from '@/shared/api/client';
-import { PageShell } from '@/shared/ui/page-shell';
-
-type LoginResponse = {
-  accessToken: string;
-};
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { loginAction } from "@/features/auth/actions";
+import AuthForm from "@/features/auth/ui";
+import { PageShell } from "@/shared/ui/page-shell";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,14 +20,11 @@ export default function LoginPage() {
   }) => {
     setError(null);
     try {
-      const data = await apiFetch<LoginResponse>('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-      localStorage.setItem('nextAccessToken', data.accessToken);
-      router.push('/me');
+      const data = await loginAction(email, password);
+      localStorage.setItem("nextAccessToken", data.accessToken);
+      router.push("/me");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось войти');
+      setError(err instanceof Error ? err.message : "Не удалось войти");
     }
   };
 

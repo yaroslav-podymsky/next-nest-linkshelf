@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
-import { apiFetch } from '@/shared/api/client';
-import '@/shared/ui/ui.css';
+import { FormEvent, useState } from "react";
+import { createCollectionAction } from "../actions";
+import "@/shared/ui/ui.css";
 
 type CollectionsFormProps = {
   onCreated: () => void | Promise<void>;
 };
 
 export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,15 +18,12 @@ export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
     setPending(true);
     setError(null);
     try {
-      await apiFetch('/collections', {
-        method: 'POST',
-        body: JSON.stringify({ title }),
-      });
-      setTitle('');
+      await createCollectionAction(title);
+      setTitle("");
       await onCreated();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Не удалось создать коллекцию',
+        err instanceof Error ? err.message : "Не удалось создать коллекцию"
       );
     } finally {
       setPending(false);
@@ -51,7 +48,7 @@ export default function CollectionsForm({ onCreated }: CollectionsFormProps) {
         type="submit"
         disabled={pending || !title.trim()}
       >
-        {pending ? 'Подождите...' : 'Добавить коллекцию'}
+        {pending ? "Подождите..." : "Добавить коллекцию"}
       </button>
 
       {error ? <p className="form-error">{error}</p> : null}
